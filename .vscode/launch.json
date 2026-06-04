@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run FastAPI Server",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.server:app",
+        "--host", "127.0.0.1",
+        "--port", "5000",
+        "--reload"
+      ],
+      "justMyCode": true,
+      "cwd": "`${workspaceFolder}"
+    },
+    {
+      "name": "Run pytest",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["tests/", "-v"],
+      "cwd": "`${workspaceFolder}",
+      "justMyCode": true
+    }
+  ]
+}
