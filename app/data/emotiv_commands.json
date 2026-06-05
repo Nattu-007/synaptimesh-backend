@@ -1,0 +1,477 @@
+[
+  {
+    "sample_id": 2001,
+    "command": "LEFT_HAND",
+    "confidence": 0.9159,
+    "category": "media",
+    "desktop_action": "PREV_TRACK",
+    "pyautogui_call": "press('prevtrack')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Previous Track"
+  },
+  {
+    "sample_id": 2002,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9241,
+    "category": "media",
+    "desktop_action": "NEXT_TRACK",
+    "pyautogui_call": "press('nexttrack')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Right hand motor imagery — Next Track"
+  },
+  {
+    "sample_id": 2003,
+    "command": "REST",
+    "confidence": 0.9569,
+    "category": "media",
+    "desktop_action": "PLAY",
+    "pyautogui_call": "press('playpause')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Play / Pause toggle"
+  },
+  {
+    "sample_id": 2004,
+    "command": "FEET",
+    "confidence": 0.9312,
+    "category": "media",
+    "desktop_action": "STOP",
+    "pyautogui_call": "press('stop')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Stop media"
+  },
+  {
+    "sample_id": 2005,
+    "command": "LEFT_HAND",
+    "confidence": 0.7421,
+    "category": "media",
+    "desktop_action": "VOLUME_DOWN",
+    "pyautogui_call": "press('volumedown')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Volume Down (rejected — below threshold)"
+  },
+  {
+    "sample_id": 2006,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9487,
+    "category": "media",
+    "desktop_action": "VOLUME_UP",
+    "pyautogui_call": "press('volumeup')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Right hand motor imagery — Volume Up"
+  },
+  {
+    "sample_id": 2007,
+    "command": "FEET",
+    "confidence": 0.9103,
+    "category": "media",
+    "desktop_action": "MUTE",
+    "pyautogui_call": "press('volumemute')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Toggle Mute"
+  },
+  {
+    "sample_id": 2008,
+    "command": "REST",
+    "confidence": 0.7831,
+    "category": "media",
+    "desktop_action": "PAUSE",
+    "pyautogui_call": "press('playpause')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Pause (rejected — below threshold)"
+  },
+
+  {
+    "sample_id": 2009,
+    "command": "LEFT_HAND",
+    "confidence": 0.9633,
+    "category": "calculator",
+    "desktop_action": "OPEN_CALCULATOR",
+    "pyautogui_call": "hotkey('win', 'r') then typewrite('calc')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Open Calculator app"
+  },
+  {
+    "sample_id": 2010,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9714,
+    "category": "calculator",
+    "desktop_action": "CLOSE_CALCULATOR",
+    "pyautogui_call": "hotkey('alt', 'F4')",
+    "status": "verified",
+    "safety_guard": "focus_check — only execute if calculator is focused",
+    "description": "Right hand motor imagery — Close Calculator app"
+  },
+  {
+    "sample_id": 2011,
+    "command": "FEET",
+    "confidence": 0.9445,
+    "category": "calculator",
+    "desktop_action": "CALCULATOR_CLEAR",
+    "pyautogui_call": "press('escape')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Clear calculator (Escape key)"
+  },
+  {
+    "sample_id": 2012,
+    "command": "REST",
+    "confidence": 0.7637,
+    "category": "calculator",
+    "desktop_action": "CALCULATOR_EQUALS",
+    "pyautogui_call": "press('enter')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Press Equals / Enter (rejected — below threshold)"
+  },
+  {
+    "sample_id": 2013,
+    "command": "LEFT_HAND",
+    "confidence": 0.9807,
+    "category": "calculator",
+    "desktop_action": "CALCULATOR_BACKSPACE",
+    "pyautogui_call": "press('backspace')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Calculator Backspace"
+  },
+  {
+    "sample_id": 2014,
+    "command": "RIGHT_HAND",
+    "confidence": 0.7233,
+    "category": "calculator",
+    "desktop_action": "CALCULATOR_COPY_RESULT",
+    "pyautogui_call": "hotkey('ctrl', 'c')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Right hand motor imagery — Copy calculator result (rejected — below threshold)"
+  },
+
+  {
+    "sample_id": 2015,
+    "command": "LEFT_HAND",
+    "confidence": 0.9506,
+    "category": "notepad",
+    "desktop_action": "OPEN_NOTEPAD",
+    "pyautogui_call": "hotkey('win', 'r') then typewrite('notepad')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Open Notepad app"
+  },
+  {
+    "sample_id": 2016,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9563,
+    "category": "notepad",
+    "desktop_action": "CLOSE_NOTEPAD",
+    "pyautogui_call": "hotkey('alt', 'F4')",
+    "status": "verified",
+    "safety_guard": "focus_check — only execute if notepad is focused",
+    "description": "Right hand motor imagery — Close Notepad app"
+  },
+  {
+    "sample_id": 2017,
+    "command": "FEET",
+    "confidence": 0.9278,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_SAVE",
+    "pyautogui_call": "hotkey('ctrl', 's')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Save Notepad file"
+  },
+  {
+    "sample_id": 2018,
+    "command": "REST",
+    "confidence": 0.9569,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_SELECT_ALL",
+    "pyautogui_call": "hotkey('ctrl', 'a')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Select all text in Notepad"
+  },
+  {
+    "sample_id": 2019,
+    "command": "LEFT_HAND",
+    "confidence": 0.7855,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_UNDO",
+    "pyautogui_call": "hotkey('ctrl', 'z')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Undo in Notepad (rejected — below threshold)"
+  },
+  {
+    "sample_id": 2020,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9410,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_NEW_FILE",
+    "pyautogui_call": "hotkey('ctrl', 'n')",
+    "status": "verified",
+    "safety_guard": "confirm_required — new file discards unsaved content",
+    "description": "Right hand motor imagery — New file in Notepad"
+  },
+  {
+    "sample_id": 2021,
+    "command": "FEET",
+    "confidence": 0.9060,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_COPY",
+    "pyautogui_call": "hotkey('ctrl', 'c')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Copy selected text in Notepad"
+  },
+  {
+    "sample_id": 2022,
+    "command": "REST",
+    "confidence": 0.7687,
+    "category": "notepad",
+    "desktop_action": "NOTEPAD_PASTE",
+    "pyautogui_call": "hotkey('ctrl', 'v')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Paste text in Notepad (rejected — below threshold)"
+  },
+
+  {
+    "sample_id": 2023,
+    "command": "LEFT_HAND",
+    "confidence": 0.9663,
+    "category": "browser",
+    "desktop_action": "OPEN_BROWSER",
+    "pyautogui_call": "subprocess.Popen(['start', 'chrome'], shell=True)",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Open browser"
+  },
+  {
+    "sample_id": 2024,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9707,
+    "category": "browser",
+    "desktop_action": "CLOSE_BROWSER",
+    "pyautogui_call": "hotkey('alt', 'F4')",
+    "status": "verified",
+    "safety_guard": "focus_check — browser must be focused window",
+    "description": "Right hand motor imagery — Close browser window"
+  },
+  {
+    "sample_id": 2025,
+    "command": "FEET",
+    "confidence": 0.9539,
+    "category": "browser",
+    "desktop_action": "NEW_TAB",
+    "pyautogui_call": "hotkey('ctrl', 't')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Open new browser tab"
+  },
+  {
+    "sample_id": 2026,
+    "command": "REST",
+    "confidence": 0.8405,
+    "category": "browser",
+    "desktop_action": "CLOSE_TAB",
+    "pyautogui_call": "hotkey('ctrl', 'w')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "focus_check — browser must be focused",
+    "description": "Neutral resting state — Close current browser tab (rejected — below threshold)"
+  },
+  {
+    "sample_id": 2027,
+    "command": "LEFT_HAND",
+    "confidence": 0.9575,
+    "category": "browser",
+    "desktop_action": "BROWSER_BACK",
+    "pyautogui_call": "hotkey('alt', 'left')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Left hand motor imagery — Browser back navigation"
+  },
+  {
+    "sample_id": 2028,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9741,
+    "category": "browser",
+    "desktop_action": "BROWSER_FORWARD",
+    "pyautogui_call": "hotkey('alt', 'right')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Right hand motor imagery — Browser forward navigation"
+  },
+  {
+    "sample_id": 2029,
+    "command": "FEET",
+    "confidence": 0.9310,
+    "category": "browser",
+    "desktop_action": "BROWSER_REFRESH",
+    "pyautogui_call": "press('f5')",
+    "status": "verified",
+    "safety_guard": "none",
+    "description": "Feet motor imagery — Refresh current browser page"
+  },
+  {
+    "sample_id": 2030,
+    "command": "REST",
+    "confidence": 0.7743,
+    "category": "browser",
+    "desktop_action": "BROWSER_FOCUS_ADDRESS_BAR",
+    "pyautogui_call": "hotkey('ctrl', 'l')",
+    "status": "rejected_low_confidence",
+    "safety_guard": "none",
+    "description": "Neutral resting state — Focus browser address bar (rejected — below threshold)"
+  },
+
+  {
+    "sample_id": 2031,
+    "command": "LEFT_HAND",
+    "confidence": 0.9278,
+    "category": "mouse",
+    "desktop_action": "MOVE_LEFT",
+    "pyautogui_call": "moveTo(max(0, x - 50), y, duration=0.2)",
+    "status": "verified",
+    "safety_guard": "clamp_x_min_0 — cursor cannot go below x=0",
+    "description": "Left hand motor imagery — Move cursor left 50px with left screen edge clamp"
+  },
+  {
+    "sample_id": 2032,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9597,
+    "category": "mouse",
+    "desktop_action": "MOVE_RIGHT",
+    "pyautogui_call": "moveTo(min(screen_w, x + 50), y, duration=0.2)",
+    "status": "verified",
+    "safety_guard": "clamp_x_max_screen_width — cursor cannot exceed screen width",
+    "description": "Right hand motor imagery — Move cursor right 50px with right screen edge clamp"
+  },
+  {
+    "sample_id": 2033,
+    "command": "FEET",
+    "confidence": 0.9445,
+    "category": "mouse",
+    "desktop_action": "MOVE_UP",
+    "pyautogui_call": "moveTo(x, max(0, y - 50), duration=0.2)",
+    "status": "verified",
+    "safety_guard": "clamp_y_min_0 — cursor cannot go above y=0",
+    "description": "Feet motor imagery — Move cursor up 50px with top screen edge clamp"
+  },
+  {
+    "sample_id": 2034,
+    "command": "REST",
+    "confidence": 0.7516,
+    "category": "mouse",
+    "desktop_action": "MOVE_DOWN",
+    "pyautogui_call": "moveTo(x, min(screen_h, y + 50), duration=0.2)",
+    "status": "rejected_low_confidence",
+    "safety_guard": "clamp_y_max_screen_height — cursor cannot exceed screen height",
+    "description": "Neutral resting state — Move cursor down 50px (rejected — below threshold)"
+  },
+  {
+    "sample_id": 2035,
+    "command": "LEFT_HAND",
+    "confidence": 0.9690,
+    "category": "mouse",
+    "desktop_action": "CLICK",
+    "pyautogui_call": "click()",
+    "status": "verified",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Left hand motor imagery — Left mouse click at current cursor position"
+  },
+  {
+    "sample_id": 2036,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9060,
+    "category": "mouse",
+    "desktop_action": "RIGHT_CLICK",
+    "pyautogui_call": "rightClick()",
+    "status": "verified",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Right hand motor imagery — Right mouse click at current cursor position"
+  },
+
+  {
+    "sample_id": 2037,
+    "command": "LEFT_HAND",
+    "confidence": 0.9754,
+    "category": "scroll",
+    "desktop_action": "SCROLL_UP",
+    "pyautogui_call": "scroll(5)",
+    "status": "verified",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Left hand motor imagery — Scroll up 5 units on focused window"
+  },
+  {
+    "sample_id": 2038,
+    "command": "RIGHT_HAND",
+    "confidence": 0.9563,
+    "category": "scroll",
+    "desktop_action": "SCROLL_DOWN",
+    "pyautogui_call": "scroll(-5)",
+    "status": "verified",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Right hand motor imagery — Scroll down 5 units on focused window"
+  },
+  {
+    "sample_id": 2039,
+    "command": "FEET",
+    "confidence": 0.9103,
+    "category": "scroll",
+    "desktop_action": "SCROLL_UP_FAST",
+    "pyautogui_call": "scroll(15)",
+    "status": "verified",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Feet motor imagery — Fast scroll up 15 units"
+  },
+  {
+    "sample_id": 2040,
+    "command": "REST",
+    "confidence": 0.7958,
+    "category": "scroll",
+    "desktop_action": "SCROLL_DOWN_FAST",
+    "pyautogui_call": "scroll(-15)",
+    "status": "rejected_low_confidence",
+    "safety_guard": "failsafe_enabled — top-left corner aborts all automation",
+    "description": "Neutral resting state — Fast scroll down 15 units (rejected — below threshold)"
+  },
+  {
+  "sample_id": 2041,
+  "command": "REST",
+  "confidence": 0.70,
+  "category": "calculator",
+  "desktop_action": "CALCULATOR_ADD",
+  "status": "verified",
+  "safety_guard": "none",
+  "description": "Calculator addition automation"
+},
+{
+  "sample_id": 2042,
+  "command": "REST",
+  "confidence": 0.70,
+  "category": "calculator",
+  "desktop_action": "CALCULATOR_SUBTRACT",
+  "status": "verified",
+  "safety_guard": "none",
+  "description": "Calculator subtraction automation"
+},
+{
+  "sample_id": 2043,
+  "command": "REST",
+  "confidence": 0.70,
+  "category": "notepad",
+  "desktop_action": "NOTEPAD_FULL_AUTOMATION",
+  "status": "verified",
+  "safety_guard": "none",
+  "description": "Full notepad automation"
+}
+]

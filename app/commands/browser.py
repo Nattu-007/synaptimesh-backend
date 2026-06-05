@@ -22,3 +22,15 @@ def new_tab():
 
 def close_tab():
     pyautogui.hotkey("ctrl", "w")
+
+def browser_back():
+    pyautogui.hotkey("alt", "left")
+
+def browser_forward():
+    pyautogui.hotkey("alt", "right")
+
+def browser_refresh():
+    pyautogui.press("f5")
+
+def browser_focus_address_bar():
+    pyautogui.hotkey("ctrl", "l")

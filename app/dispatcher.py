@@ -1,28 +1,47 @@
-# app/dispatcher.py
-from app.commands import execute_command, ACTION_MAP
-from app.config import CONFIDENCE_THRESHOLD
+from app.commands import ACTION_MAP
 
-COMMAND_REGISTRY = set(ACTION_MAP.keys())
+DEFAULT_THRESHOLD = 0.70
 
-def dispatch_command(validated: dict) -> dict:
-    """
-    Receives an already-validated payload dict.
-    Applies confidence gating, then executes desktop automation.
-    """
-    command    = validated.get("command")
-    confidence = validated.get("confidence", 0.0)
 
-    # Check registry
-    if command not in COMMAND_REGISTRY:
-        return {"status": "error", "message": f"Unknown command: {command}"}
+def dispatch_command(command, confidence=None):
 
-    # Confidence gate
-    if confidence < CONFIDENCE_THRESHOLD:
+    # Support validated payload dictionaries
+    if isinstance(command, dict):
+        payload = command
+        command = payload.get("command")
+        confidence = payload.get("confidence", 1.0)
+
+    # Support direct string commands
+    if confidence is None:
+        confidence = 1.0
+
+    if confidence < DEFAULT_THRESHOLD:
         return {
             "status": "skipped",
-            "message": f"Confidence {confidence:.2f} below threshold {CONFIDENCE_THRESHOLD}"
+            "message": (
+                f"Confidence {confidence:.2f} "
+                f"below threshold {DEFAULT_THRESHOLD:.2f}"
+            )
         }
 
-    # Execute
-    result = execute_command(command)
-    return {"status": "ok", "command": command, "result": result}
+    action = ACTION_MAP.get(command)
+
+    if action is None:
+        return {
+            "status": "error",
+            "message": f"Unknown command: {command}"
+        }
+
+    try:
+        action()
+
+        return {
+            "status": "ok",
+            "message": f"{command} executed successfully"
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
