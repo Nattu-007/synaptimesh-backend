@@ -26,7 +26,6 @@ def calculator_copy_result():
 
 def calculate_addition():
     """Types 3000 + 457 = in the calculator."""
-    pyautogui.hotkey("alt", "F4")          # Close any open calculator first
     time.sleep(0.5)
 
     open_calculator()                       # Open fresh calculator
