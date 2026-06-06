@@ -1,56 +1,127 @@
 # app/server.py
-from fastapi import FastAPI, HTTPException
+# Synaptimesh FastAPI server — Day 4
+# Adds: structured logging, global exception handlers, chatbot route
+
+import uvicorn
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from dotenv import load_dotenv
 
-from app.schema import CommandPayload, validate_command
-from app.mqtt_client import publish_command
+from app.schema     import CommandPayload, validate_command
+from app.mqtt_client import publish_command, connect, is_connected
 from app.dispatcher import dispatch_command
-from app.config import SERVER_HOST, SERVER_PORT, SERVER_DEBUG
+from app.config     import SERVER_HOST, SERVER_PORT, SERVER_DEBUG
+from app.logger     import get_logger
+from app.exceptions import (
+    SynaptimeshError,
+    InvalidPayloadError,
+    ConfidenceTooLowError,
+    UnknownCommandError,
+    AutomationError,
+    MQTTConnectionError,
+    MQTTNotConnectedError,
+)
+from app.chatbot import router as chatbot_router
 
-load_dotenv()
+logger = get_logger(__name__)
 
 app = FastAPI(title="SynaptiMesh Backend", version="0.1.0")
 
-@app.post("/receive-command")
-async def receive_command(payload: CommandPayload):
-    # Step 1: Validate
-    validated, error = validate_command(payload.dict())
-    if error:
-        raise HTTPException(status_code=400, detail=error)
+# ── Mount chatbot routes ──────────────────────────────────────────────────────
+app.include_router(chatbot_router, prefix="/chat", tags=["Chatbot"])
 
-    # Step 2: Publish to MQTT (broadcasts to IoT & Embedded teams)
-    publish_command(validated)
 
-    # Step 3: Execute desktop automation
-    result = dispatch_command(validated)
+# ── Startup / Shutdown ────────────────────────────────────────────────────────
 
-    return {
-        "status": "ok",
-        "command": validated,
-        "dispatch": result
-    }
+@app.on_event("startup")
+async def startup():
+    logger.info("SynaptiMesh backend starting up...")
+    try:
+        connect()
+    except MQTTConnectionError as e:
+        logger.error(f"MQTT startup failed: {e} — continuing without MQTT.")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    logger.info("SynaptiMesh backend shutting down.")
+
+
+# ── Global Exception Handlers ─────────────────────────────────────────────────
+
+HTTP_STATUS_MAP = {
+    "INVALID_PAYLOAD":       400,
+    "UNKNOWN_COMMAND":       400,
+    "LOW_CONFIDENCE":        422,
+    "AUTOMATION_ERROR":      500,
+    "MQTT_CONNECTION_ERROR": 503,
+    "MQTT_PUBLISH_ERROR":    503,
+    "MQTT_NOT_CONNECTED":    503,
+}
+
+@app.exception_handler(SynaptimeshError)
+async def synaptimesh_error_handler(request: Request, exc: SynaptimeshError):
+    status = HTTP_STATUS_MAP.get(exc.code, 500)
+    logger.warning(f"Handled [{exc.code}]: {exc.message}")
+    return JSONResponse(status_code=status, content={
+        "error":  exc.code,
+        "detail": exc.message,
+    })
+
+@app.exception_handler(Exception)
+async def generic_error_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={
+        "error":  "INTERNAL_ERROR",
+        "detail": "An unexpected error occurred.",
+    })
+
+
+# ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/")
 async def home():
-    return {
-        "service": "SynaptiMesh Backend",
-        "status":  "running"
-    }
+    return {"service": "SynaptiMesh Backend", "status": "running"}
+
 
 @app.get("/health")
 async def health():
+    mqtt_status = "connected" if is_connected() else "disconnected"
+    logger.debug(f"Health check — MQTT: {mqtt_status}")
     return {
         "status":  "healthy",
         "service": "SynaptiMesh Backend",
-        "mqtt":    "connected"
+        "mqtt":    mqtt_status,
     }
 
+
+@app.post("/receive-command")
+async def receive_command(payload: CommandPayload):
+    validated, error = validate_command(payload.dict())
+    if error:
+        logger.warning(f"Payload validation failed: {error}")
+        raise InvalidPayloadError(error)
+
+    logger.info(f"Received command: {validated.get('command')} | conf={validated.get('confidence')}")
+
+    # Publish to MQTT (non-fatal if broker is down)
+    try:
+        publish_command(validated)
+    except (MQTTNotConnectedError, MQTTConnectionError) as e:
+        logger.warning(f"MQTT publish skipped: {e}")
+
+    # Execute desktop automation
+    result = dispatch_command(validated)
+
+    return {"status": "ok", "command": validated, "dispatch": result}
+
+
+# ── Entry Point ───────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
-    import uvicorn
+    logger.info(f"Starting uvicorn on {SERVER_HOST}:{SERVER_PORT} | debug={SERVER_DEBUG}")
     uvicorn.run(
         "app.server:app",
         host=SERVER_HOST,
         port=SERVER_PORT,
-        reload=SERVER_DEBUG
+        reload=SERVER_DEBUG,
     )

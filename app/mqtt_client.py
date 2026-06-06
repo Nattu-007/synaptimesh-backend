@@ -1,78 +1,120 @@
 # app/mqtt_client.py
-import paho.mqtt.client as mqtt
+# MQTT client — publisher + subscriber with auto-reconnect and structured logging
+
 import json
 import uuid
 import time
-from app.config import MQTT_BROKER, MQTT_PORT, MQTT_TOPIC
-from app.router import get_topic
+import threading
+import paho.mqtt.client as mqtt
 
-# ─── Topics ─────────────────────────────────────────────────────────────────
-SUBSCRIBE_TOPIC  = "synaptimesh/commands/#"    # Listen to ALL command topics
-PUBLISH_TOPIC    = "synaptimesh/commands/desktop"
+from app.config  import MQTT_BROKER, MQTT_PORT, MQTT_TOPIC
+from app.router  import get_topic
+from app.logger  import get_logger
+from app.exceptions import MQTTConnectionError, MQTTPublishError, MQTTNotConnectedError
 
-# ─── Callbacks ──────────────────────────────────────────────────────────────
+logger = get_logger(__name__)
+
+SUBSCRIBE_TOPIC    = "synaptimesh/commands/#"
+PUBLISH_TOPIC      = "synaptimesh/commands/desktop"
+RECONNECT_DELAY    = 5
+MAX_RECONNECT_TRIES = 10
+
+# ── Callbacks ──────────────────────────────────────────────────────────────────
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print(f"[MQTT] Connected to broker at {MQTT_BROKER}:{MQTT_PORT}")
+        logger.info(f"Connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
         client.subscribe(SUBSCRIBE_TOPIC)
-        print(f"[MQTT] Subscribed to {SUBSCRIBE_TOPIC}")
+        logger.info(f"Subscribed to {SUBSCRIBE_TOPIC}")
+        client._synaptimesh_connected = True
+        client._synaptimesh_reconnect_count = 0
     else:
-        print(f"[MQTT] Connection failed — code {rc}")
+        logger.error(f"MQTT connection refused — return code {rc}")
+        client._synaptimesh_connected = False
+
 
 def on_disconnect(client, userdata, rc):
-    print(f"[MQTT] Disconnected — code {rc}. Reconnecting...")
-    try:
-        client.reconnect()
-    except Exception as e:
-        print(f"[MQTT] Reconnect failed: {e}")
+    client._synaptimesh_connected = False
+    if rc != 0:
+        logger.warning(f"Unexpected MQTT disconnect (rc={rc}). Starting auto-reconnect...")
+        _auto_reconnect(client)
+
 
 def on_message(client, userdata, msg):
-    """
-    Triggered when a message arrives on any subscribed topic.
-    Parses the payload and dispatches the command.
-    """
-    print(f"\n[MQTT] Message received on topic: {msg.topic}")
-
+    """Triggered when a message arrives on any subscribed topic."""
+    logger.info(f"Message on topic '{msg.topic}'")
     try:
         payload = json.loads(msg.payload.decode())
-        print(f"[MQTT] Payload: {payload}")
+        logger.debug(f"Payload: {payload}")
 
-        # Import here to avoid circular imports
-        from app.schema import validate_command
+        # Avoid circular imports
+        from app.schema     import validate_command
         from app.dispatcher import dispatch_command
 
-        # Validate
         validated, error = validate_command(payload)
         if error:
-            print(f"[MQTT] Validation failed: {error}")
+            logger.warning(f"Validation failed: {error}")
             return
 
-        # Dispatch → executes on PC
         result = dispatch_command(validated)
-        print(f"[MQTT] Dispatch result: {result}")
+        logger.info(f"Dispatch result: {result}")
 
     except json.JSONDecodeError as e:
-        print(f"[MQTT] Invalid JSON: {e}")
+        logger.error(f"Invalid JSON payload: {e}")
     except Exception as e:
-        print(f"[MQTT] Error processing message: {e}")
+        logger.error(f"Error processing MQTT message: {e}", exc_info=True)
 
-# ─── Client Setup ────────────────────────────────────────────────────────────
+
+# ── Auto-reconnect ─────────────────────────────────────────────────────────────
+
+def _auto_reconnect(client):
+    """Background thread — retries connection up to MAX_RECONNECT_TRIES."""
+    def _loop():
+        count = getattr(client, "_synaptimesh_reconnect_count", 0)
+        while not getattr(client, "_synaptimesh_connected", False) and count < MAX_RECONNECT_TRIES:
+            count += 1
+            client._synaptimesh_reconnect_count = count
+            logger.info(f"Reconnect attempt {count}/{MAX_RECONNECT_TRIES}...")
+            try:
+                client.reconnect()
+                time.sleep(0.5)
+                if getattr(client, "_synaptimesh_connected", False):
+                    logger.info("Reconnected successfully.")
+                    return
+            except Exception as e:
+                logger.warning(f"Reconnect attempt {count} failed: {e}")
+            time.sleep(RECONNECT_DELAY)
+        if not getattr(client, "_synaptimesh_connected", False):
+            logger.error("Max MQTT reconnect attempts reached. Giving up.")
+
+    threading.Thread(target=_loop, daemon=True).start()
+
+
+# ── Client Setup ───────────────────────────────────────────────────────────────
 
 client = mqtt.Client(client_id="synaptimesh-backend")
+client._synaptimesh_connected       = False
+client._synaptimesh_reconnect_count = 0
 client.on_connect    = on_connect
 client.on_disconnect = on_disconnect
 client.on_message    = on_message
+
 
 def connect():
     try:
         client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
         client.loop_start()
-        print(f"[MQTT] Connecting to {MQTT_BROKER}:{MQTT_PORT}...")
+        time.sleep(0.5)
+        logger.info(f"Connecting to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}...")
     except Exception as e:
-        print(f"[MQTT] Could not connect: {e}")
+        logger.error(f"MQTT connect failed: {e}")
+        raise MQTTConnectionError(MQTT_BROKER, MQTT_PORT)
+
 
 def publish_command(validated: dict):
+    if not getattr(client, "_synaptimesh_connected", False):
+        raise MQTTNotConnectedError()
+
     command = validated.get("command")
     topic   = get_topic(command) or PUBLISH_TOPIC
 
@@ -82,15 +124,17 @@ def publish_command(validated: dict):
         "confidence":     validated.get("confidence"),
         "source":         validated.get("source", "EEG"),
         "timestamp":      validated.get("timestamp") or time.time(),
-        "target":         topic.split("/")[-1]
+        "target":         topic.split("/")[-1],
     }
 
     payload = json.dumps(message)
-    result  = client.publish(topic, payload)
+    result  = client.publish(topic, payload, qos=1)
 
     if result.rc == mqtt.MQTT_ERR_SUCCESS:
-        print(f"[MQTT] Published → {topic}: {payload}")
+        logger.info(f"Published → {topic} | cmd={command} | id={message['correlation_id']}")
     else:
-        print(f"[MQTT] Publish failed — rc={result.rc}")
+        raise MQTTPublishError(topic, f"rc={result.rc}")
 
-connect()
+
+def is_connected() -> bool:
+    return getattr(client, "_synaptimesh_connected", False)

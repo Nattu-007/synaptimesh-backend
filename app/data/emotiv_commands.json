@@ -473,5 +473,29 @@
   "status": "verified",
   "safety_guard": "none",
   "description": "Full notepad automation"
+},
+{
+  "sample_id": 2044,
+  "command": "OPEN_YOUTUBE",
+  "confidence": 0.95,
+  "category": "webapp",
+  "desktop_action": "OPEN_YOUTUBE",
+  "status": "verified"
+},
+{
+  "sample_id": 2045,
+  "command": "OPEN_GMAIL",
+  "confidence": 0.95,
+  "category": "webapp",
+  "desktop_action": "OPEN_GMAIL",
+  "status": "verified"
+},
+{
+  "sample_id": 2046,
+  "command": "OPEN_NETFLIX",
+  "confidence": 0.95,
+  "category": "webapp",
+  "desktop_action": "OPEN_NETFLIX",
+  "status": "verified"
 }
 ]

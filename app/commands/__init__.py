@@ -43,6 +43,7 @@ ACTION_MAP = {
     "BROWSER_REFRESH":           browser_refresh,
     "BROWSER_FOCUS_ADDRESS_BAR": browser_focus_address_bar,
 
+
     # ── Mouse ──────────────────────────────────────────────────
     "MOVE_LEFT":                 move_left,
     "MOVE_RIGHT":                move_right,
