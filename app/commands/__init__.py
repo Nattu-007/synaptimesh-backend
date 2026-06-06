@@ -21,7 +21,8 @@ from app.commands.notepad import (open_notepad, close_notepad, notepad_save,
                                    notepad_select_all, notepad_undo,
                                    notepad_new_file, notepad_copy, notepad_paste,
                                    notepad_full_automation)
-
+from app.webapps.gmail import open_gmail
+from app.webapps.netflix import open_netflix
 ACTION_MAP = {
     # ── Media ──────────────────────────────────────────────────
     "PLAY":                      play,
@@ -78,6 +79,8 @@ ACTION_MAP = {
     "NOTEPAD_COPY":              notepad_copy,
     "NOTEPAD_PASTE":             notepad_paste,
     "NOTEPAD_FULL_AUTOMATION":   notepad_full_automation, # ← NEW
+    "OPEN_GMAIL": open_gmail,
+    "OPEN_NETFLIX": open_netflix,
 }
 
 def execute_command(command: str) -> str:

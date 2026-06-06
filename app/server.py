@@ -21,6 +21,10 @@ from app.exceptions import (
     MQTTNotConnectedError,
 )
 from app.chatbot import router as chatbot_router
+from app.webapps.youtube import (
+    search_videos,
+    play_video
+)
 
 logger = get_logger(__name__)
 
@@ -114,6 +118,15 @@ async def receive_command(payload: CommandPayload):
 
     return {"status": "ok", "command": validated, "dispatch": result}
 
+@app.get("/youtube/search")
+async def youtube_search(query: str):
+
+    return search_videos(query)
+
+@app.get("/youtube/play")
+async def youtube_play(query: str):
+
+    return play_video(query)
 
 # ── Entry Point ───────────────────────────────────────────────────────────────
 

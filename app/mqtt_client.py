@@ -1,140 +1,458 @@
 # app/mqtt_client.py
-# MQTT client — publisher + subscriber with auto-reconnect and structured logging
+# SynaptiMesh MQTT Client
+# Publisher + Subscriber + Auto Reconnect + WebApp Support
 
 import json
 import uuid
 import time
 import threading
+
 import paho.mqtt.client as mqtt
 
-from app.config  import MQTT_BROKER, MQTT_PORT, MQTT_TOPIC
-from app.router  import get_topic
-from app.logger  import get_logger
-from app.exceptions import MQTTConnectionError, MQTTPublishError, MQTTNotConnectedError
+from app.config import (
+    MQTT_BROKER,
+    MQTT_PORT
+)
+
+from app.router import get_topic
+
+from app.logger import get_logger
+
+from app.exceptions import (
+    MQTTConnectionError,
+    MQTTPublishError,
+    MQTTNotConnectedError
+)
 
 logger = get_logger(__name__)
 
-SUBSCRIBE_TOPIC    = "synaptimesh/commands/#"
-PUBLISH_TOPIC      = "synaptimesh/commands/desktop"
-RECONNECT_DELAY    = 5
+SUBSCRIBE_TOPIC = "synaptimesh/commands/#"
+
+DEFAULT_TOPIC = "synaptimesh/commands/desktop"
+
+STATUS_TOPIC = "synaptimesh/status"
+
+RECONNECT_DELAY = 5
+
 MAX_RECONNECT_TRIES = 10
 
-# ── Callbacks ──────────────────────────────────────────────────────────────────
 
-def on_connect(client, userdata, flags, rc):
+# =====================================================
+# MQTT CALLBACKS
+# =====================================================
+
+def on_connect(
+    client,
+    userdata,
+    flags,
+    rc
+):
+
     if rc == 0:
-        logger.info(f"Connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
-        client.subscribe(SUBSCRIBE_TOPIC)
-        logger.info(f"Subscribed to {SUBSCRIBE_TOPIC}")
+
         client._synaptimesh_connected = True
+
         client._synaptimesh_reconnect_count = 0
+
+        logger.info(
+            f"Connected to MQTT Broker "
+            f"{MQTT_BROKER}:{MQTT_PORT}"
+        )
+
+        client.subscribe(
+            SUBSCRIBE_TOPIC
+        )
+
+        logger.info(
+            f"Subscribed -> "
+            f"{SUBSCRIBE_TOPIC}"
+        )
+
     else:
-        logger.error(f"MQTT connection refused — return code {rc}")
+
         client._synaptimesh_connected = False
 
+        logger.error(
+            f"MQTT Connection Failed "
+            f"(rc={rc})"
+        )
 
-def on_disconnect(client, userdata, rc):
+
+def on_disconnect(
+    client,
+    userdata,
+    rc
+):
+
     client._synaptimesh_connected = False
+
     if rc != 0:
-        logger.warning(f"Unexpected MQTT disconnect (rc={rc}). Starting auto-reconnect...")
+
+        logger.warning(
+            "Unexpected disconnect"
+        )
+
         _auto_reconnect(client)
 
 
-def on_message(client, userdata, msg):
-    """Triggered when a message arrives on any subscribed topic."""
-    logger.info(f"Message on topic '{msg.topic}'")
+def on_publish(
+    client,
+    userdata,
+    mid
+):
+
+    logger.debug(
+        f"Publish ACK received "
+        f"(mid={mid})"
+    )
+
+
+def on_message(
+    client,
+    userdata,
+    msg
+):
+
+    logger.info(
+        f"MQTT Message -> "
+        f"{msg.topic}"
+    )
+
     try:
-        payload = json.loads(msg.payload.decode())
-        logger.debug(f"Payload: {payload}")
 
-        # Avoid circular imports
-        from app.schema     import validate_command
-        from app.dispatcher import dispatch_command
+        payload = json.loads(
+            msg.payload.decode()
+        )
 
-        validated, error = validate_command(payload)
+        logger.debug(
+            f"Payload={payload}"
+        )
+
+        from app.schema import (
+            validate_command
+        )
+
+        from app.dispatcher import (
+            dispatch_command
+        )
+
+        validated, error = (
+            validate_command(
+                payload
+            )
+        )
+
         if error:
-            logger.warning(f"Validation failed: {error}")
+
+            logger.warning(
+                f"Validation failed "
+                f"{error}"
+            )
+
             return
 
-        result = dispatch_command(validated)
-        logger.info(f"Dispatch result: {result}")
+        result = dispatch_command(
+            validated
+        )
+
+        logger.info(
+            f"Dispatch Result "
+            f"{result}"
+        )
 
     except json.JSONDecodeError as e:
-        logger.error(f"Invalid JSON payload: {e}")
+
+        logger.error(
+            f"JSON Decode Error "
+            f"{e}"
+        )
+
     except Exception as e:
-        logger.error(f"Error processing MQTT message: {e}", exc_info=True)
+
+        logger.error(
+            f"MQTT Processing Error "
+            f"{e}",
+            exc_info=True
+        )
 
 
-# ── Auto-reconnect ─────────────────────────────────────────────────────────────
+# =====================================================
+# RECONNECT
+# =====================================================
 
 def _auto_reconnect(client):
-    """Background thread — retries connection up to MAX_RECONNECT_TRIES."""
-    def _loop():
-        count = getattr(client, "_synaptimesh_reconnect_count", 0)
-        while not getattr(client, "_synaptimesh_connected", False) and count < MAX_RECONNECT_TRIES:
+
+    def reconnect_loop():
+
+        count = getattr(
+            client,
+            "_synaptimesh_reconnect_count",
+            0
+        )
+
+        while (
+            not getattr(
+                client,
+                "_synaptimesh_connected",
+                False
+            )
+            and count < MAX_RECONNECT_TRIES
+        ):
+
             count += 1
-            client._synaptimesh_reconnect_count = count
-            logger.info(f"Reconnect attempt {count}/{MAX_RECONNECT_TRIES}...")
+
+            client._synaptimesh_reconnect_count = (
+                count
+            )
+
+            logger.info(
+                f"Reconnect "
+                f"{count}/"
+                f"{MAX_RECONNECT_TRIES}"
+            )
+
             try:
+
                 client.reconnect()
-                time.sleep(0.5)
-                if getattr(client, "_synaptimesh_connected", False):
-                    logger.info("Reconnected successfully.")
+
+                time.sleep(1)
+
+                if getattr(
+                    client,
+                    "_synaptimesh_connected",
+                    False
+                ):
+
+                    logger.info(
+                        "MQTT Reconnected"
+                    )
+
                     return
+
             except Exception as e:
-                logger.warning(f"Reconnect attempt {count} failed: {e}")
-            time.sleep(RECONNECT_DELAY)
-        if not getattr(client, "_synaptimesh_connected", False):
-            logger.error("Max MQTT reconnect attempts reached. Giving up.")
 
-    threading.Thread(target=_loop, daemon=True).start()
+                logger.warning(
+                    f"Reconnect failed "
+                    f"{e}"
+                )
+
+            time.sleep(
+                RECONNECT_DELAY
+            )
+
+        logger.error(
+            "Max reconnect attempts reached"
+        )
+
+    threading.Thread(
+        target=reconnect_loop,
+        daemon=True
+    ).start()
 
 
-# ── Client Setup ───────────────────────────────────────────────────────────────
+# =====================================================
+# CLIENT SETUP
+# =====================================================
 
-client = mqtt.Client(client_id="synaptimesh-backend")
-client._synaptimesh_connected       = False
+client = mqtt.Client(
+    client_id="synaptimesh-backend"
+)
+
+client._synaptimesh_connected = False
+
 client._synaptimesh_reconnect_count = 0
-client.on_connect    = on_connect
-client.on_disconnect = on_disconnect
-client.on_message    = on_message
 
+client.on_connect = on_connect
+
+client.on_disconnect = on_disconnect
+
+client.on_publish = on_publish
+
+client.on_message = on_message
+
+
+# =====================================================
+# CONNECTION
+# =====================================================
 
 def connect():
+
     try:
-        client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+
+        logger.info(
+            f"Connecting MQTT "
+            f"{MQTT_BROKER}:{MQTT_PORT}"
+        )
+
+        client.connect(
+            MQTT_BROKER,
+            MQTT_PORT,
+            keepalive=60
+        )
+
         client.loop_start()
+
         time.sleep(0.5)
-        logger.info(f"Connecting to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}...")
+
     except Exception as e:
-        logger.error(f"MQTT connect failed: {e}")
-        raise MQTTConnectionError(MQTT_BROKER, MQTT_PORT)
+
+        logger.error(
+            f"MQTT Connect Failed "
+            f"{e}"
+        )
+
+        raise MQTTConnectionError(
+            MQTT_BROKER,
+            MQTT_PORT
+        )
 
 
-def publish_command(validated: dict):
-    if not getattr(client, "_synaptimesh_connected", False):
+# =====================================================
+# PUBLISH
+# =====================================================
+
+def publish_command(
+    validated: dict
+):
+
+    if not getattr(
+        client,
+        "_synaptimesh_connected",
+        False
+    ):
+
         raise MQTTNotConnectedError()
 
-    command = validated.get("command")
-    topic   = get_topic(command) or PUBLISH_TOPIC
+    command = validated.get(
+        "command"
+    )
+
+    topic = (
+        get_topic(command)
+        or DEFAULT_TOPIC
+    )
 
     message = {
-        "correlation_id": str(uuid.uuid4())[:8],
-        "command":        command,
-        "confidence":     validated.get("confidence"),
-        "source":         validated.get("source", "EEG"),
-        "timestamp":      validated.get("timestamp") or time.time(),
-        "target":         topic.split("/")[-1],
+
+        "correlation_id":
+        str(uuid.uuid4())[:8],
+
+        "command":
+        command,
+
+        "confidence":
+        validated.get(
+            "confidence"
+        ),
+
+        "source":
+        validated.get(
+            "source",
+            "EEG"
+        ),
+
+        "timestamp":
+        validated.get(
+            "timestamp"
+        )
+        or time.time(),
+
+        "target":
+        topic.split("/")[-1]
     }
 
-    payload = json.dumps(message)
-    result  = client.publish(topic, payload, qos=1)
+    if "query" in validated:
 
-    if result.rc == mqtt.MQTT_ERR_SUCCESS:
-        logger.info(f"Published → {topic} | cmd={command} | id={message['correlation_id']}")
+        message["query"] = (
+            validated["query"]
+        )
+
+    payload = json.dumps(
+        message
+    )
+
+    result = client.publish(
+        topic,
+        payload,
+        qos=1
+    )
+
+    if (
+        result.rc
+        == mqtt.MQTT_ERR_SUCCESS
+    ):
+
+        logger.info(
+            f"Published -> "
+            f"{topic} | "
+            f"{command} | "
+            f"id="
+            f"{message['correlation_id']}"
+        )
+
     else:
-        raise MQTTPublishError(topic, f"rc={result.rc}")
+
+        raise MQTTPublishError(
+            topic,
+            f"rc={result.rc}"
+        )
+
+    return message
 
 
-def is_connected() -> bool:
-    return getattr(client, "_synaptimesh_connected", False)
+# =====================================================
+# STATUS
+# =====================================================
+
+def is_connected():
+
+    return getattr(
+        client,
+        "_synaptimesh_connected",
+        False
+    )
+
+
+def connection_status():
+
+    return {
+
+        "connected":
+        is_connected(),
+
+        "broker":
+        MQTT_BROKER,
+
+        "port":
+        MQTT_PORT,
+
+        "reconnect_attempts":
+        getattr(
+            client,
+            "_synaptimesh_reconnect_count",
+            0
+        )
+    }
+
+
+# =====================================================
+# HEALTH CHECK
+# =====================================================
+
+def mqtt_health():
+
+    return {
+
+        "service": "mqtt",
+
+        "status":
+        "healthy"
+        if is_connected()
+        else "disconnected",
+
+        "broker":
+        MQTT_BROKER,
+
+        "port":
+        MQTT_PORT
+    }

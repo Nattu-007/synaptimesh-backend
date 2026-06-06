@@ -20,6 +20,13 @@ from typing import Optional
 from app.logger         import get_logger
 from app.command_loader import get_action_map, get_eeg_to_action_map
 from app.config         import GROQ_API_KEY, GROQ_MODEL, CONFIDENCE_THRESHOLD
+from app.webapps.intent_router import detect_intent
+from app.webapps.youtube import (
+    search_videos,
+    play_video
+)
+from app.webapps.gmail import open_gmail
+from app.webapps.netflix import open_netflix
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -37,6 +44,26 @@ def get_groq_client() -> AsyncGroq | None:
         _groq_client = AsyncGroq(api_key=GROQ_API_KEY)
     return _groq_client
 
+def detect_local_intent(message):
+
+    text = message.lower()
+
+    if "open gmail" in text:
+        return ("OPEN_GMAIL", None)
+
+    if "open netflix" in text:
+        return ("OPEN_NETFLIX", None)
+
+    if "open youtube" in text:
+        return ("OPEN_YOUTUBE", None)
+
+    if text.startswith("play "):
+        return (
+            "PLAY_YOUTUBE",
+            text.replace("play ", "")
+        )
+
+    return None
 
 # ── System prompt — gives the model full Synaptimesh context ──────────────────
 

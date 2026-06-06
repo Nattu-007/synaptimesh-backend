@@ -476,26 +476,34 @@
 },
 {
   "sample_id": 2044,
-  "command": "OPEN_YOUTUBE",
-  "confidence": 0.95,
-  "category": "webapp",
-  "desktop_action": "OPEN_YOUTUBE",
-  "status": "verified"
-},
-{
-  "sample_id": 2045,
-  "command": "OPEN_GMAIL",
+  "command": "LEFT_HAND",
   "confidence": 0.95,
   "category": "webapp",
   "desktop_action": "OPEN_GMAIL",
   "status": "verified"
 },
 {
-  "sample_id": 2046,
-  "command": "OPEN_NETFLIX",
+  "sample_id": 2045,
+  "command": "RIGHT_HAND",
   "confidence": 0.95,
   "category": "webapp",
   "desktop_action": "OPEN_NETFLIX",
+  "status": "verified"
+},
+{
+  "sample_id": 2046,
+  "command": "PUSH",
+  "confidence": 0.95,
+  "category": "webapp",
+  "desktop_action": "OPEN_YOUTUBE",
+  "status": "verified"
+},
+{
+  "sample_id": 2047,
+  "command": "PULL",
+  "confidence": 0.95,
+  "category": "webapp",
+  "desktop_action": "PLAY_YOUTUBE_VIDEO",
   "status": "verified"
 }
 ]
