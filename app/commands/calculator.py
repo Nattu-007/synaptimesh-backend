@@ -1,60 +1,330 @@
 # app/commands/calculator.py
+
+import platform
 import subprocess
 import time
+
 import pyautogui
+
+from app.logger import get_logger
+
+logger = get_logger(__name__)
 
 pyautogui.FAILSAFE = True
 
+
+# =====================================================
+# HELPERS
+# =====================================================
+
+def _success(action, **extra):
+
+    result = {
+        "status": "success",
+        "action": action
+    }
+
+    result.update(extra)
+
+    return result
+
+
+def _failure(action, error):
+
+    logger.error(
+        f"{action} failed: {error}"
+    )
+
+    return {
+        "status": "error",
+        "action": action,
+        "error": str(error)
+    }
+
+
+# =====================================================
+# OPEN / CLOSE
+# =====================================================
+
 def open_calculator():
-    subprocess.Popen(["calc.exe"])
-    time.sleep(2)   # Wait for calculator to fully open
+
+    try:
+
+        os_name = platform.system()
+
+        logger.info(
+            f"Opening calculator on {os_name}"
+        )
+
+        if os_name == "Windows":
+
+            subprocess.Popen(
+                ["calc.exe"]
+            )
+
+        elif os_name == "Darwin":
+
+            subprocess.Popen(
+                ["open", "-a", "Calculator"]
+            )
+
+        else:
+
+            subprocess.Popen(
+                ["gnome-calculator"]
+            )
+
+        time.sleep(2)
+
+        return _success(
+            "OPEN_CALCULATOR"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "OPEN_CALCULATOR",
+            e
+        )
+
 
 def close_calculator():
-    pyautogui.hotkey("alt", "F4")
+
+    try:
+
+        pyautogui.hotkey(
+            "alt",
+            "f4"
+        )
+
+        return _success(
+            "CLOSE_CALCULATOR"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CLOSE_CALCULATOR",
+            e
+        )
+
+
+# =====================================================
+# BASIC CONTROLS
+# =====================================================
 
 def calculator_clear():
-    pyautogui.press("escape")
+
+    try:
+
+        pyautogui.press(
+            "escape"
+        )
+
+        return _success(
+            "CALCULATOR_CLEAR"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CALCULATOR_CLEAR",
+            e
+        )
+
 
 def calculator_equals():
-    pyautogui.press("enter")
+
+    try:
+
+        pyautogui.press(
+            "enter"
+        )
+
+        return _success(
+            "CALCULATOR_EQUALS"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CALCULATOR_EQUALS",
+            e
+        )
+
 
 def calculator_backspace():
-    pyautogui.press("backspace")
+
+    try:
+
+        pyautogui.press(
+            "backspace"
+        )
+
+        return _success(
+            "CALCULATOR_BACKSPACE"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CALCULATOR_BACKSPACE",
+            e
+        )
+
 
 def calculator_copy_result():
-    pyautogui.hotkey("ctrl", "c")
+
+    try:
+
+        pyautogui.hotkey(
+            "ctrl",
+            "c"
+        )
+
+        return _success(
+            "CALCULATOR_COPY"
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CALCULATOR_COPY",
+            e
+        )
+
+
+# =====================================================
+# GENERIC CALCULATOR INPUT
+# =====================================================
+
+def calculate_expression(
+    left,
+    operator,
+    right
+):
+
+    try:
+
+        open_calculator()
+
+        time.sleep(1)
+
+        pyautogui.typewrite(
+            str(left),
+            interval=0.05
+        )
+
+        time.sleep(0.2)
+
+        pyautogui.press(
+            operator
+        )
+
+        time.sleep(0.2)
+
+        pyautogui.typewrite(
+            str(right),
+            interval=0.05
+        )
+
+        time.sleep(0.2)
+
+        pyautogui.press(
+            "enter"
+        )
+
+        result_text = (
+            f"{left} {operator} {right}"
+        )
+
+        logger.info(
+            f"Calculator executed: "
+            f"{result_text}"
+        )
+
+        return _success(
+            "CALCULATOR_EXPRESSION",
+            expression=result_text
+        )
+
+    except Exception as e:
+
+        return _failure(
+            "CALCULATOR_EXPRESSION",
+            e
+        )
+
+
+# =====================================================
+# PREDEFINED DEMOS
+# =====================================================
 
 def calculate_addition():
-    """Types 3000 + 457 = in the calculator."""
+
+    try:
+
+        close_calculator()
+
+    except Exception:
+        pass
+
     time.sleep(0.5)
 
-    open_calculator()                       # Open fresh calculator
-    time.sleep(1)
+    result = calculate_expression(
+        3000,
+        "add",
+        457
+    )
 
-    pyautogui.typewrite("3000", interval=0.1)
-    time.sleep(0.3)
-    pyautogui.press("add")                 # + key on numpad
-    time.sleep(0.3)
-    pyautogui.typewrite("457", interval=0.1)
-    time.sleep(0.3)
-    pyautogui.press("enter")               # = key
-    time.sleep(0.5)
-    print("[CALCULATOR] Addition: 3000 + 457 = 3457")
+    logger.info(
+        "3000 + 457 = 3457"
+    )
+
+    return result
+
 
 def calculate_subtraction():
-    """Types 3000 - 457 = in the calculator."""
-    pyautogui.hotkey("alt", "F4")          # Close any open calculator first
+
+    try:
+
+        close_calculator()
+
+    except Exception:
+        pass
+
     time.sleep(0.5)
 
-    open_calculator()                       # Open fresh calculator
-    time.sleep(1)
+    result = calculate_expression(
+        3000,
+        "subtract",
+        457
+    )
 
-    pyautogui.typewrite("3000", interval=0.1)
-    time.sleep(0.3)
-    pyautogui.press("subtract")            # - key on numpad
-    time.sleep(0.3)
-    pyautogui.typewrite("457", interval=0.1)
-    time.sleep(0.3)
-    pyautogui.press("enter")               # = key
-    time.sleep(0.5)
-    print("[CALCULATOR] Subtraction: 3000 - 457 = 2543")
+    logger.info(
+        "3000 - 457 = 2543"
+    )
+
+    return result
+
+
+# =====================================================
+# FUTURE OPERATIONS
+# =====================================================
+
+def calculate_multiplication():
+
+    return calculate_expression(
+        3000,
+        "multiply",
+        457
+    )
+
+
+def calculate_division():
+
+    return calculate_expression(
+        3000,
+        "divide",
+        457
+    )

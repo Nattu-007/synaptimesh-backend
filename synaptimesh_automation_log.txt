@@ -1,13 +1,4 @@
-========================================
-  SYNAPTIMESH  Desktop Automation Log  
-========================================
-
-Session   : EEG-Controlled Automation
-Headset   : Emotiv EPOC X
-Backend   : SynaptiMesh FastAPI Server
-
-Commands Executed:
-  [1] OPEN_NOTEPAD       Notepad launched
+  Notepad launched
   [2] NOTEPAD_SELECT_ALL  All text selected
   [3] NOTEPAD_COPY       Text copied
   [4] NOTEPAD_SAVE       File saved

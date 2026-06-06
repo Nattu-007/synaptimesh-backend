@@ -1,0 +1,6 @@
+========================================
+  SYNAPTIMESH  Desktop Automation Log  
+========================================
+
+Session   : EEG-Controlled Automation
+Headset   : Emotiv E
